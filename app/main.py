@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from app.firestore_service import list_menu_items, add_menu_item
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.config import Config
@@ -87,6 +88,15 @@ def create_app():
             return redirect(url_for("login"))
 
         return render_template("dashboard.html", email=session.get("user_email"))
+    
+    @app.route("/menu")
+    def menu():
+        items = list_menu_items()
+        return render_template("menu.html", items=items)
+
+    @app.route("/api/menu", methods=["GET"])
+    def api_menu():
+        return jsonify(list_menu_items())
 
     return app
 

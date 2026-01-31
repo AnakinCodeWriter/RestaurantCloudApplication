@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head><title>Menu</title></head>
+  <body>
+    <h1>Menu</h1>
+
+    <p><a href="{{ url_for('home') }}">Home</a></p>
+
+    {% if items %}
+      <ul>
+        {% for item in items %}
+          <li>
+            <strong>{{ item.name }}</strong> — £{{ item.price }}
+            <em>({{ item.category }})</em>
+            {% if item.tags %} — tags: {{ item.tags }}{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No menu items yet.</p>
+    {% endif %}
+  </body>
+</html>
