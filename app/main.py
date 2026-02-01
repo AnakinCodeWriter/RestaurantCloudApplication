@@ -1,6 +1,9 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import os, json
+from google.cloud import pubsub_v1
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from app.firestore_service import list_menu_items, add_menu_item, get_menu_item
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -175,6 +178,19 @@ def create_app():
             ))
 
         db.session.commit()
+
+        topic_name = os.environ.get("PUBSUB_TOPIC", "order-created")
+        project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")  # set automatically on GCP
+        if project_id:
+            publisher = pubsub_v1.PublisherClient()
+            topic_path = publisher.topic_path(project_id, topic_name)
+
+            payload = {
+                "order_id": order.id,
+                "user_email": session.get("user_email"),
+                "total": total
+            }
+            publisher.publish(topic_path, json.dumps(payload).encode("utf-8"))
 
         #clears the cart
         session["cart"] = {}
