@@ -8,6 +8,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.config import Config
 from app.models import db, User
 
+from app.firestore_service import list_menu_items, get_menu_item
+from app.models import db, User, Order, OrderItem
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -99,6 +102,99 @@ def create_app():
     def api_menu():
         return jsonify(list_menu_items())
     
+    @app.route("/cart/add/<item_id>", methods=["POST"])
+    def cart_add(item_id):
+        item = get_menu_item(item_id)
+        if not item:
+            flash("Menu item not found.", "error")
+            return redirect(url_for("menu"))
+        
+        cart = session.get("cart", {})
+        cart[item_id] = cart.get(item_id, 0) + 1
+        session["cart"] = cart
+
+        flash(f"Added {item['name']} to cart.", "success")
+        return redirect(url_for("menu"))
+
+    @app.route("/cart")
+    def cart_view():
+        cart = session.get("cart", {})
+        detailed = []
+        total = 0.0
+
+        for item_id, qty in cart.items():
+            item = get_menu_item(item_id)
+            if item:
+                line_total = float(item["price"]) * qty
+                total += line_total
+                detailed.append({
+                    "id": item_id,
+                    "name": item["name"],
+                    "price": float(item["price"]),
+                    "quantity": qty,
+                    "line_total": line_total
+                })
+
+        return render_template("cart.html", items=detailed, total=total)
+    
+    @app.route("/checkout", methods=["POST"])
+    def checkout():
+        if "user_id" not in session:
+            flash("Please log in to checkout.", "error")
+            return redirect(url_for("login"))
+
+        cart = session.get("cart", {})
+        if not cart:
+            flash("Your cart is empty.", "error")
+            return redirect(url_for("menu"))
+
+        #building order items from the firestore database
+        order_items = []
+        total = 0.0
+
+        for item_id, qty in cart.items():
+            item = get_menu_item(item_id)
+            if not item:
+                continue
+            price = float(item["price"])
+            total += price * qty
+            order_items.append((item_id, item["name"], price, qty))
+
+        if not order_items:
+            flash("Could not checkout because menu items were missing.", "error")
+            return redirect(url_for("cart_view"))
+
+        #writing to sql
+        order = Order(user_id=session["user_id"], total=total, status="created")
+        db.session.add(order)
+        db.session.flush()  # get order.id before commit
+
+        for item_id, name, price, qty in order_items:
+            db.session.add(OrderItem(
+                order_id=order.id,
+                menu_item_id=item_id,
+                name=name,
+                price=price,
+                quantity=qty
+            ))
+
+        db.session.commit()
+
+        #clears the cart
+        session["cart"] = {}
+
+        flash(f"Order placed! Order #{order.id}", "success")
+        return redirect(url_for("orders"))
+    
+    @app.route("/orders")
+    def orders():
+        if "user_id" not in session:
+            flash("Please log in to view your orders.", "error")
+            return redirect(url_for("login"))
+
+        user_orders = Order.query.filter_by(user_id=session["user_id"]).order_by(Order.created_at.desc()).all()
+        return render_template("orders.html", orders=user_orders)
+
     @app.route("/admin/seed-menu")
     def seed_menu():
         if session.get("user_role") != "admin":
