@@ -40,7 +40,8 @@ def create_app():
 
             password_hash = generate_password_hash(password)
 
-            user = User(email=email, password_hash=password_hash)
+            role = "admin" if email.endswith("@yourdomain.com") else "customer"
+            user = User(email=email, password_hash=password_hash, role=role)
             db.session.add(user)
             db.session.commit()
 
@@ -97,6 +98,16 @@ def create_app():
     @app.route("/api/menu", methods=["GET"])
     def api_menu():
         return jsonify(list_menu_items())
+    
+    @app.route("/admin/seed-menu")
+    def seed_menu():
+        if session.get("user_role") != "admin":
+            return "Forbidden", 403
+
+        add_menu_item("Cheeseburger", 8.99, "main", ["beef", "popular"])
+        add_menu_item("Veggie Wrap", 7.49, "main", ["vegetarian"])
+        add_menu_item("Fries", 2.99, "side", ["popular"])
+        return redirect(url_for("menu"))
 
     return app
 
