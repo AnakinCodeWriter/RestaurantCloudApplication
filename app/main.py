@@ -2,13 +2,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from app.firestore_service import list_menu_items, add_menu_item
+from app.firestore_service import list_menu_items, add_menu_item, get_menu_item
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.config import Config
-from app.models import db, User
-
-from app.firestore_service import list_menu_items, get_menu_item
 from app.models import db, User, Order, OrderItem
 
 def create_app():
@@ -43,8 +40,7 @@ def create_app():
 
             password_hash = generate_password_hash(password)
 
-            role = "admin" if email.endswith("@yourdomain.com") else "customer"
-            user = User(email=email, password_hash=password_hash, role=role)
+            user = User(email=email, password_hash=password_hash, role="customer")
             db.session.add(user)
             db.session.commit()
 
