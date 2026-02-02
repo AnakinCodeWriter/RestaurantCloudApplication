@@ -1,29 +1,35 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Restaurant App</title>
-  </head>
-  <body>
-    <h1>Restaurant App</h1>
+{% extends "base.html" %}
+{% block title %}Home • Restaurant{% endblock %}
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li><strong>{{ category }}:</strong> {{ message }}</li>
-          {% endfor %}
-        </ul>
+{% block content %}
+  <div class="grid grid-2">
+    <div class="card">
+      <h1>Welcome</h1>
+      <p>
+        Browse the menu, add items to your cart, and place an order.
+        This app demonstrates SQL + Firestore + Pub/Sub + Cloud Function.
+      </p>
+
+      <p style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;">
+        <a class="btn" href="{{ url_for('menu') }}">View Menu</a>
+        <a class="btn btn-outline" href="{{ url_for('cart_view') }}">Go to Cart</a>
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Quick links</h2>
+      <p style="display:flex; gap:10px; flex-wrap:wrap;">
+        {% if session.get("user_id") %}
+          <a class="btn btn-outline" href="{{ url_for('orders') }}">My Orders</a>
+        {% endif %}
+      </p>
+
+      {% if session.get("user_role") == "admin" %}
+        <p style="margin-top:14px;">
+          <span class="badge">Admin</span>
+          <a class="btn" style="margin-left:10px;" href="{{ url_for('seed_menu') }}">Seed Menu</a>
+        </p>
       {% endif %}
-    {% endwith %}
-
-    {% if session.get("user_id") %}
-      <p>You are logged in as {{ session.get("user_email") }}</p>
-      <p><a href="{{ url_for('dashboard') }}">Dashboard</a></p>
-      <p><a href="{{ url_for('logout') }}">Logout</a></p>
-      <p><a href="{{ url_for('orders') }}">My Orders</a></p>
-    {% else %}
-      <p><a href="{{ url_for('register') }}">Register</a></p>
-      <p><a href="{{ url_for('login') }}">Login</a></p>
-    {% endif %}
-  </body>
-</html>
+    </div>
+  </div>
+{% endblock %}

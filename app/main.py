@@ -213,9 +213,8 @@ def create_app():
         if session.get("user_role") != "admin":
             return "Forbidden", 403
 
-        add_menu_item("Cheeseburger", 8.99, "main", ["beef", "popular"])
-        add_menu_item("Veggie Wrap", 7.49, "main", ["vegetarian"])
-        add_menu_item("Fries", 2.99, "side", ["popular"])
+        #add_menu_item("Fish and Chips", 9.99, "main", ["fish", "popular"])
+        #add_menu_item("Scotch Egg", 6.99, "side", ["vegetarian"]) //use this as template to add more food to the menu
         return redirect(url_for("menu"))
 
     return app

@@ -1,32 +1,43 @@
-<!doctype html>
-<html>
-  <head><title>Menu</title></head>
-  <body>
+{% extends "base.html" %}
+{% block title %}Menu • Restaurant{% endblock %}
+
+{% block content %}
+  <div class="card">
     <h1>Menu</h1>
-
-    <p>
-      <a href="{{ url_for('cart_view') }}">View cart</a>
-    </p>
-
-    <p><a href="{{ url_for('home') }}">Home</a></p>
+    <p>Choose items and add them to your cart.</p>
 
     {% if items %}
-      <ul>
-        {% for item in items %}
-          <li>
-            <strong>{{ item.name }}</strong> — £{{ item.price }}
-            <em>({{ item.category }})</em>
-            {% if item.tags %} — tags: {{ item.tags }}{% endif %}
-            <form method="post"
-                action="{{ url_for('cart_add', item_id=item.id) }}"
-                style="display:inline;">
-              <button type="submit">Add to cart</button>
-            </form>
-          </li>
-        {% endfor %}
-      </ul>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+            <tr>
+              <td>
+                <strong>{{ item.name }}</strong>
+                {% if item.tags %}
+                  <div class="badge" style="margin-top:8px;">tags: {{ item.tags }}</div>
+                {% endif %}
+              </td>
+              <td>{{ item.category }}</td>
+              <td>£{{ item.price }}</td>
+              <td style="text-align:right;">
+                <form method="post" action="{{ url_for('cart_add', item_id=item.id) }}" style="margin:0;">
+                  <button class="btn" type="submit">Add to cart</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     {% else %}
       <p>No menu items yet.</p>
     {% endif %}
-  </body>
-</html>
+  </div>
+{% endblock %}
