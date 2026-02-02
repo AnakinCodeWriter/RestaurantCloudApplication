@@ -1,3 +1,7 @@
 runtime: python39
 
 entrypoint: gunicorn -b :$PORT app.main:app
+
+
+env_variables:
+  PUBSUB_TOPIC: "order-created"
