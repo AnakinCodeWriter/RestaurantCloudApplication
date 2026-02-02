@@ -1,38 +1,66 @@
-<!doctype html>
-<html>
-  <head><title>Cart</title></head>
-  <body>
+{% extends "base.html" %}
+{% block title %}Cart • Restaurant{% endblock %}
+
+{% block content %}
+  <div class="card">
     <h1>Your Cart</h1>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li><strong>{{ category }}:</strong> {{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-
-    <p><a href="{{ url_for('menu') }}">Back to menu</a> | <a href="{{ url_for('home') }}">Home</a></p>
+    <p>Review items before checkout.</p>
 
     {% if items %}
-      <ul>
-        {% for item in items %}
-          <li>
-            <strong>{{ item.name }}</strong> — £{{ item.price }} × {{ item.quantity }}
-            = £{{ "%.2f"|format(item.line_total) }}
-          </li>
-        {% endfor %}
-      </ul>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th style="text-align:right;">Line total</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td><strong>{{ item.name }}</strong></td>
+            <td>£{{ "%.2f"|format(item.price) }}</td>
+            <td>{{ item.quantity }}</td>
+            <td style="text-align:right;">£{{ "%.2f"|format(item.line_total) }}</td>
+            <td style="text-align:right;">
+              <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+                <form method="post" action="{{ url_for('cart_add', item_id=item.id) }}" style="margin:0;">
+                  <button class="btn btn-outline" type="submit">+</button>
+                </form>
+          
+                <form method="post" action="{{ url_for('cart_decrease', item_id=item.id) }}" style="margin:0;">
+                  <button class="btn btn-outline" type="submit">−</button>
+                </form>
+          
+                <form method="post" action="{{ url_for('cart_remove', item_id=item.id) }}" style="margin:0;">
+                  <button class="btn btn-outline" type="submit">Remove</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
-      <h3>Total: £{{ "%.2f"|format(total) }}</h3>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; flex-wrap:wrap;">
+        <h3 style="margin:0;">Total: £{{ "%.2f"|format(total) }}</h3>
 
-      <form method="post" action="{{ url_for('checkout') }}">
-        <button type="submit">Checkout</button>
-      </form>
+        <form method="post" action="{{ url_for('checkout') }}" style="margin:0;">
+          <button class="btn" type="submit">Checkout</button>
+        </form>
+      </div>
+
+      <p style="margin-top:14px;">
+        <a class="btn btn-outline" href="{{ url_for('menu') }}">Continue shopping</a>
+      </p>
+
     {% else %}
       <p>Your cart is empty.</p>
+      <p style="margin-top:14px;">
+        <a class="btn" href="{{ url_for('menu') }}">Browse Menu</a>
+      </p>
     {% endif %}
-  </body>
-</html>
+  </div>
+{% endblock %}

@@ -217,6 +217,26 @@ def create_app():
         #add_menu_item("Scotch Egg", 6.99, "side", ["vegetarian"]) //use this as template to add more food to the menu
         return redirect(url_for("menu"))
 
+    @app.route("/cart/decrease/<item_id>", methods=["POST"])
+    def cart_decrease(item_id):
+        cart = session.get("cart", {})
+        if item_id in cart:
+            cart[item_id] -= 1
+            if cart[item_id] <= 0:
+                cart.pop(item_id, None)
+            session["cart"] = cart
+            flash("Updated cart.", "success")
+        return redirect(url_for("cart_view"))
+
+    @app.route("/cart/remove/<item_id>", methods=["POST"])
+    def cart_remove(item_id):
+        cart = session.get("cart", {})
+        if item_id in cart:
+            cart.pop(item_id, None)
+            session["cart"] = cart
+            flash("Item removed from cart.", "success")
+        return redirect(url_for("cart_view"))
+
     return app
 
 app = create_app()

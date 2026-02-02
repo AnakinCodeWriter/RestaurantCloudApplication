@@ -1,34 +1,58 @@
-<!doctype html>
-<html>
-  <head><title>My Orders</title></head>
-  <body>
+{% extends "base.html" %}
+{% block title %}My Orders • Restaurant{% endblock %}
+
+{% block content %}
+  <div class="card">
     <h1>My Orders</h1>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <ul>
-          {% for category, message in messages %}
-            <li><strong>{{ category }}:</strong> {{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-
-    <p><a href="{{ url_for('menu') }}">Menu</a> | <a href="{{ url_for('home') }}">Home</a></p>
+    <p>Your recent orders are shown below.</p>
 
     {% if orders %}
       {% for order in orders %}
-        <hr />
-        <h3>Order #{{ order.id }} — £{{ "%.2f"|format(order.total) }} — {{ order.status }}</h3>
-        <p>Created: {{ order.created_at }}</p>
-        <ul>
-          {% for item in order.items %}
-            <li>{{ item.name }} — £{{ item.price }} × {{ item.quantity }}</li>
-          {% endfor %}
-        </ul>
+        <div class="card" style="margin-top:16px;">
+          <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+            <div>
+              <h3 style="margin:0;">
+                Order #{{ order.id }}
+                <span class="badge" style="margin-left:10px;">{{ order.status }}</span>
+              </h3>
+              <p style="margin:8px 0 0;">Created: {{ order.created_at }}</p>
+            </div>
+
+            <div style="text-align:right;">
+              <h3 style="margin:0;">£{{ "%.2f"|format(order.total) }}</h3>
+              <p style="margin:8px 0 0; color: var(--muted);">Total</p>
+            </div>
+          </div>
+
+          {% if order.items %}
+            <table class="table" style="margin-top:14px;">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Price</th>
+                  <th>Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in order.items %}
+                  <tr>
+                    <td><strong>{{ item.name }}</strong></td>
+                    <td>£{{ "%.2f"|format(item.price) }}</td>
+                    <td>{{ item.quantity }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p style="margin-top:12px;">No items found for this order.</p>
+          {% endif %}
+        </div>
       {% endfor %}
     {% else %}
       <p>No orders yet.</p>
+      <p style="margin-top:14px;">
+        <a class="btn" href="{{ url_for('menu') }}">Browse Menu</a>
+      </p>
     {% endif %}
-  </body>
-</html>
+  </div>
+{% endblock %}
