@@ -5,3 +5,4 @@ entrypoint: gunicorn -b :$PORT app.main:app
 
 env_variables:
   PUBSUB_TOPIC: "order-created"
+  SECRET_KEY: "Bournemouth123"
