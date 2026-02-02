@@ -11,11 +11,11 @@ INSTANCE_DIR.mkdir(exist_ok=True)
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-key")
 
-    #using sqlite locally for now for ease
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-         "DATABASE_URL",
-        f"sqlite:///{(INSTANCE_DIR / 'local.db').as_posix()}"
-    )
+    if os.environ.get("GAE_ENV", "").startswith("standard"):
+        SQLALCHEMY_DATABASE_URI = "sqlite:////tmp/local.db"
+    else:
+        SQLALCHEMY_DATABASE_URI = "sqlite:///local.db"
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     #session and cookie security
