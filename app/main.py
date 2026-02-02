@@ -180,7 +180,7 @@ def create_app():
         db.session.commit()
 
         topic_name = os.environ.get("PUBSUB_TOPIC", "order-created")
-        project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")  # set automatically on GCP
+        project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "restaurantcloudapp")  # set automatically on GCP
         if project_id:
             publisher = pubsub_v1.PublisherClient()
             topic_path = publisher.topic_path(project_id, topic_name)
@@ -190,6 +190,7 @@ def create_app():
                 "user_email": session.get("user_email"),
                 "total": total
             }
+
             publisher.publish(topic_path, json.dumps(payload).encode("utf-8"))
 
         #clears the cart
