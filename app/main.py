@@ -73,7 +73,7 @@ def create_app():
             session["user_role"] = user.role
 
             flash("Logged in successfully.", "success")
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("home"))
 
         return render_template("login.html")
 
